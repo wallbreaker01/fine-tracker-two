@@ -20,6 +20,14 @@ const withExplicitSslMode = (connectionString: string) => {
   }
 };
 
+const getConnectionStringFromEnv = () => {
+  return (
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_URL ??
+    process.env.POSTGRES_URL_NON_POOLING
+  );
+};
+
 const globalForDb = globalThis as unknown as {
   __fineTrackerDbPool?: Pool;
   __fineTrackerDbPoolInit?: Promise<Pool>;
@@ -34,10 +42,12 @@ const getDbPool = async (): Promise<Pool> => {
 
   if (!globalForDb.__fineTrackerDbPoolInit) {
     globalForDb.__fineTrackerDbPoolInit = Promise.resolve().then(() => {
-      const connectDB = process.env.DATABASE_URL;
+      const connectDB = getConnectionStringFromEnv();
 
       if (!connectDB) {
-        throw new Error("DATABASE_URL is missing in environment variables");
+        throw new Error(
+          "Missing database connection string. Set DATABASE_URL or POSTGRES_URL in environment variables.",
+        );
       }
 
       const connectionString = withExplicitSslMode(connectDB);
