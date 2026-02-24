@@ -6,11 +6,6 @@ import type {
   SummaryStats,
 } from "@/lib/database/types";
 
-const connectDB = process.env.DATABASE_URL;
-
-if (!connectDB)
-  throw new Error("DATABASE_URL is missing in environment variables");
-
 const withExplicitSslMode = (connectionString: string) => {
   try {
     const url = new URL(connectionString);
@@ -25,21 +20,51 @@ const withExplicitSslMode = (connectionString: string) => {
   }
 };
 
-const connectionString = withExplicitSslMode(connectDB);
-
 const globalForDb = globalThis as unknown as {
   __fineTrackerDbPool?: Pool;
+  __fineTrackerDbPoolInit?: Promise<Pool>;
   __fineTrackerUsersReady?: Promise<void>;
   __fineTrackerDashboardReady?: Promise<void>;
 };
 
-export const db =
-  globalForDb.__fineTrackerDbPool ??
-  new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+const getDbPool = async (): Promise<Pool> => {
+  if (globalForDb.__fineTrackerDbPool) {
+    return globalForDb.__fineTrackerDbPool;
+  }
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__fineTrackerDbPool = db;
-}
+  if (!globalForDb.__fineTrackerDbPoolInit) {
+    globalForDb.__fineTrackerDbPoolInit = Promise.resolve().then(() => {
+      const connectDB = process.env.DATABASE_URL;
+
+      if (!connectDB) {
+        throw new Error("DATABASE_URL is missing in environment variables");
+      }
+
+      const connectionString = withExplicitSslMode(connectDB);
+      const pool = new Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+      });
+
+      globalForDb.__fineTrackerDbPool = pool;
+
+      return pool;
+    });
+  }
+
+  return globalForDb.__fineTrackerDbPoolInit;
+};
+
+const query: Pool["query"] = ((...args: unknown[]) => {
+  return getDbPool().then((pool) => {
+    const poolQuery = pool.query as (...innerArgs: unknown[]) => unknown;
+    return poolQuery(...args);
+  });
+}) as Pool["query"];
+
+export const db: Pick<Pool, "query"> = {
+  query,
+};
 
 export async function ensureUsersTable() {
   if (!globalForDb.__fineTrackerUsersReady) {
