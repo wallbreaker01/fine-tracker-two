@@ -6,6 +6,11 @@ import type {
   SummaryStats,
 } from "@/lib/database/types";
 
+const connectDB = process.env.DATABASE_URL;
+
+if (!connectDB)
+  throw new Error("DATABASE_URL is missing in environment variables");
+
 const withExplicitSslMode = (connectionString: string) => {
   try {
     const url = new URL(connectionString);
@@ -20,80 +25,28 @@ const withExplicitSslMode = (connectionString: string) => {
   }
 };
 
-const getConnectionStringFromEnv = () => {
-  return (
-    process.env.DATABASE_URL ??
-    process.env.POSTGRES_URL ??
-    process.env.POSTGRES_URL_NON_POOLING
-  );
-};
+const connectionString = withExplicitSslMode(connectDB);
 
-const globalForDb = globalThis as unknown as {
-  __fineTrackerDbPool?: Pool;
-  __fineTrackerDbPoolInit?: Promise<Pool>;
-  __fineTrackerUsersReady?: Promise<void>;
-  __fineTrackerDashboardReady?: Promise<void>;
-};
+const globalForDb = globalThis as unknown as { __fineTrackerDbPool?: Pool };
 
-const getDbPool = async (): Promise<Pool> => {
-  if (globalForDb.__fineTrackerDbPool) {
-    return globalForDb.__fineTrackerDbPool;
-  }
+export const db =
+  globalForDb.__fineTrackerDbPool ??
+  new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
 
-  if (!globalForDb.__fineTrackerDbPoolInit) {
-    globalForDb.__fineTrackerDbPoolInit = Promise.resolve().then(() => {
-      const connectDB = getConnectionStringFromEnv();
-
-      if (!connectDB) {
-        throw new Error(
-          "Missing database connection string. Set DATABASE_URL or POSTGRES_URL in environment variables.",
-        );
-      }
-
-      const connectionString = withExplicitSslMode(connectDB);
-      const pool = new Pool({
-        connectionString,
-        ssl: { rejectUnauthorized: false },
-      });
-
-      globalForDb.__fineTrackerDbPool = pool;
-
-      return pool;
-    });
-  }
-
-  return globalForDb.__fineTrackerDbPoolInit;
-};
-
-const query: Pool["query"] = ((...args: unknown[]) => {
-  return getDbPool().then((pool) => {
-    const poolQuery = pool.query as (...innerArgs: unknown[]) => unknown;
-    return poolQuery.apply(pool, args);
-  });
-}) as Pool["query"];
-
-export const db: Pick<Pool, "query"> = {
-  query,
-};
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.__fineTrackerDbPool = db;
+}
 
 export async function ensureUsersTable() {
-  if (!globalForDb.__fineTrackerUsersReady) {
-    globalForDb.__fineTrackerUsersReady = db
-      .query(
-        `
-        CREATE TABLE IF NOT EXISTS users (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(120) NOT NULL,
-          email VARCHAR(255) UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          created_at TIMESTAMPTZ DEFAULT NOW()
-        );
-      `,
-      )
-      .then(() => undefined);
-  }
-
-  await globalForDb.__fineTrackerUsersReady;
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(120) NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
 }
 
 type SumRow = {
@@ -127,45 +80,39 @@ const toNumber = (value: string | number | null | undefined) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const ensureDashboardTables = async () => {
-  if (!globalForDb.__fineTrackerDashboardReady) {
-    globalForDb.__fineTrackerDashboardReady = (async () => {
-      await ensureUsersTable();
+const ensureDashboardTables = cache(async () => {
+  await ensureUsersTable();
 
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS fines (
-          id BIGSERIAL PRIMARY KEY,
-          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-          amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-          reason TEXT NOT NULL,
-          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        );
-      `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS fines (
+      id BIGSERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+      reason TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `);
 
-      await db.query(`
-        CREATE TABLE IF NOT EXISTS party_expenses (
-          id BIGSERIAL PRIMARY KEY,
-          amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-          note TEXT,
-          spent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL
-        );
-      `);
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS party_expenses (
+      id BIGSERIAL PRIMARY KEY,
+      amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+      note TEXT,
+      spent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+    );
+  `);
 
-      await db.query(
-        "CREATE INDEX IF NOT EXISTS idx_fines_user_id ON fines(user_id)",
-      );
-      await db.query(
-        "CREATE INDEX IF NOT EXISTS idx_fines_created_at ON fines(created_at DESC)",
-      );
-      await db.query(
-        "CREATE INDEX IF NOT EXISTS idx_party_expenses_spent_at ON party_expenses(spent_at DESC)",
-      );
-    })();
-  }
-
-  await globalForDb.__fineTrackerDashboardReady;
-};
+  await db.query(
+    "CREATE INDEX IF NOT EXISTS idx_fines_user_id ON fines(user_id)",
+  );
+  await db.query(
+    "CREATE INDEX IF NOT EXISTS idx_fines_created_at ON fines(created_at DESC)",
+  );
+  await db.query(
+    "CREATE INDEX IF NOT EXISTS idx_party_expenses_spent_at ON party_expenses(spent_at DESC)",
+  );
+});
 
 export const getSummaryStats = cache(
   async (currentUserId: number | null): Promise<SummaryStats> => {
@@ -244,7 +191,7 @@ export const getLeaderboard = cache(
         [safeLimit],
       );
 
-      return result.rows.map((row: LeaderboardRow, index: number) => ({
+      return result.rows.map((row, index) => ({
         id: toNumber(row.id),
         name: row.name,
         avatar: null,
@@ -285,7 +232,7 @@ export const getRecentActivity = cache(
         [safeLimit],
       );
 
-      return result.rows.map((row: RecentActivityRow) => ({
+      return result.rows.map((row) => ({
         id: toNumber(row.id),
         userId: row.user_id,
         userName: row.user_name,
