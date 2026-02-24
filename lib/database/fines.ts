@@ -2,6 +2,9 @@ import { cache } from "react";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import type { FineInput } from "@/lib/formValidation";
 
+const DEFAULT_FINES_LIMIT = 100;
+const MAX_FINES_LIMIT = 500;
+
 export type FineMember = {
   id: number;
   name: string;
@@ -46,46 +49,56 @@ const buildInitials = (name: string) => {
   return `${parts[0][0] ?? ""}${parts[1][0] ?? ""}`.toUpperCase();
 };
 
-const ensureFineInfrastructure = cache(async () => {
-  await ensureUsersTable();
+const globalForFineInfrastructure = globalThis as unknown as {
+  __fineTrackerFineInfraReady?: Promise<void>;
+};
 
-  await db.query(`
-    ALTER TABLE users
-    ADD COLUMN IF NOT EXISTS image_url TEXT
-  `);
+const ensureFineInfrastructure = async () => {
+  if (!globalForFineInfrastructure.__fineTrackerFineInfraReady) {
+    globalForFineInfrastructure.__fineTrackerFineInfraReady = (async () => {
+      await ensureUsersTable();
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS fines (
-      id BIGSERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-      reason TEXT NOT NULL,
-      fine_date DATE NOT NULL DEFAULT CURRENT_DATE,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-  `);
+      await db.query(`
+        ALTER TABLE users
+        ADD COLUMN IF NOT EXISTS image_url TEXT
+      `);
 
-  await db.query(`
-    ALTER TABLE fines
-    ADD COLUMN IF NOT EXISTS fine_date DATE NOT NULL DEFAULT CURRENT_DATE
-  `);
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS fines (
+          id BIGSERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+          reason TEXT NOT NULL,
+          fine_date DATE NOT NULL DEFAULT CURRENT_DATE,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        )
+      `);
 
-  await db.query(`
-    ALTER TABLE fines
-    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-  `);
+      await db.query(`
+        ALTER TABLE fines
+        ADD COLUMN IF NOT EXISTS fine_date DATE NOT NULL DEFAULT CURRENT_DATE
+      `);
 
-  await db.query(`
-    UPDATE fines
-    SET fine_date = created_at::date
-    WHERE fine_date IS NULL
-  `);
+      await db.query(`
+        ALTER TABLE fines
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      `);
 
-  await db.query(
-    "CREATE INDEX IF NOT EXISTS idx_fines_date_desc ON fines(fine_date DESC)",
-  );
-});
+      await db.query(`
+        UPDATE fines
+        SET fine_date = created_at::date
+        WHERE fine_date IS NULL
+      `);
+
+      await db.query(
+        "CREATE INDEX IF NOT EXISTS idx_fines_date_desc ON fines(fine_date DESC)",
+      );
+    })();
+  }
+
+  await globalForFineInfrastructure.__fineTrackerFineInfraReady;
+};
 
 const mapFineRow = (row: FineRow): FineListItem => ({
   id: toNumber(row.id),
@@ -115,8 +128,14 @@ export const getFineMembers = cache(async (): Promise<FineMember[]> => {
     image: row.image_url,
   }));
 });
-export async function getFines(): Promise<FineListItem[]> {
+export async function getFines(
+  limit = DEFAULT_FINES_LIMIT,
+): Promise<FineListItem[]> {
   await ensureFineInfrastructure();
+
+  const safeLimit = Number.isFinite(limit)
+    ? Math.max(1, Math.min(Math.trunc(limit), MAX_FINES_LIMIT))
+    : DEFAULT_FINES_LIMIT;
 
   const result = await db.query<FineRow>(
     `
@@ -131,7 +150,9 @@ export async function getFines(): Promise<FineListItem[]> {
       FROM fines f
       INNER JOIN users u ON u.id = f.user_id
       ORDER BY f.fine_date DESC, f.id DESC
+      LIMIT $1
     `,
+    [safeLimit],
   );
 
   return result.rows.map(mapFineRow);

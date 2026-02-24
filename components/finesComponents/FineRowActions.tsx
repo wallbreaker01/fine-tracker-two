@@ -53,7 +53,8 @@ export function FineRowActions({ fineId }: FineRowActionsProps) {
 
             <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon-sm" aria-label="Delete fine" disabled={isDeleting}>
+                    <Button variant="ghost" size="icon-sm" aria-label="Delete fine" disabled={isDeleting}
+                        className="text-destructive hover:bg-destructive/10 hover:text-destructive">
                         {isDeleting ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
                     </Button>
                 </AlertDialogTrigger>
@@ -64,7 +65,13 @@ export function FineRowActions({ fineId }: FineRowActionsProps) {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-white hover:bg-destructive/90">Delete</AlertDialogAction>
+                        <AlertDialogAction
+                            onClick={handleDelete}
+                            variant="destructive"
+                            className="text-white hover:text-white"
+                        >
+                            Delete
+                        </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

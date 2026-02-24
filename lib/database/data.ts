@@ -27,7 +27,11 @@ const withExplicitSslMode = (connectionString: string) => {
 
 const connectionString = withExplicitSslMode(connectDB);
 
-const globalForDb = globalThis as unknown as { __fineTrackerDbPool?: Pool };
+const globalForDb = globalThis as unknown as {
+  __fineTrackerDbPool?: Pool;
+  __fineTrackerUsersReady?: Promise<void>;
+  __fineTrackerDashboardReady?: Promise<void>;
+};
 
 export const db =
   globalForDb.__fineTrackerDbPool ??
@@ -38,15 +42,23 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export async function ensureUsersTable() {
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(120) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-  `);
+  if (!globalForDb.__fineTrackerUsersReady) {
+    globalForDb.__fineTrackerUsersReady = db
+      .query(
+        `
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(120) NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      `,
+      )
+      .then(() => undefined);
+  }
+
+  await globalForDb.__fineTrackerUsersReady;
 }
 
 type SumRow = {
@@ -80,39 +92,45 @@ const toNumber = (value: string | number | null | undefined) => {
   return Number.isFinite(parsed) ? parsed : 0;
 };
 
-const ensureDashboardTables = cache(async () => {
-  await ensureUsersTable();
+const ensureDashboardTables = async () => {
+  if (!globalForDb.__fineTrackerDashboardReady) {
+    globalForDb.__fineTrackerDashboardReady = (async () => {
+      await ensureUsersTable();
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS fines (
-      id BIGSERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-      reason TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-  `);
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS fines (
+          id BIGSERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+          reason TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        );
+      `);
 
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS party_expenses (
-      id BIGSERIAL PRIMARY KEY,
-      amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
-      note TEXT,
-      spent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL
-    );
-  `);
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS party_expenses (
+          id BIGSERIAL PRIMARY KEY,
+          amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+          note TEXT,
+          spent_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL
+        );
+      `);
 
-  await db.query(
-    "CREATE INDEX IF NOT EXISTS idx_fines_user_id ON fines(user_id)",
-  );
-  await db.query(
-    "CREATE INDEX IF NOT EXISTS idx_fines_created_at ON fines(created_at DESC)",
-  );
-  await db.query(
-    "CREATE INDEX IF NOT EXISTS idx_party_expenses_spent_at ON party_expenses(spent_at DESC)",
-  );
-});
+      await db.query(
+        "CREATE INDEX IF NOT EXISTS idx_fines_user_id ON fines(user_id)",
+      );
+      await db.query(
+        "CREATE INDEX IF NOT EXISTS idx_fines_created_at ON fines(created_at DESC)",
+      );
+      await db.query(
+        "CREATE INDEX IF NOT EXISTS idx_party_expenses_spent_at ON party_expenses(spent_at DESC)",
+      );
+    })();
+  }
+
+  await globalForDb.__fineTrackerDashboardReady;
+};
 
 export const getSummaryStats = cache(
   async (currentUserId: number | null): Promise<SummaryStats> => {
