@@ -6,47 +6,109 @@ import type {
   SummaryStats,
 } from "@/lib/database/types";
 
-const connectDB = process.env.DATABASE_URL;
-
-if (!connectDB)
-  throw new Error("DATABASE_URL is missing in environment variables");
+const getConnectionStringFromEnv = () => {
+  return (
+    process.env.DATABASE_URL ??
+    process.env.POSTGRES_URL ??
+    process.env.POSTGRES_URL_NON_POOLING
+  );
+};
 
 const withExplicitSslMode = (connectionString: string) => {
   try {
     const url = new URL(connectionString);
-    url.searchParams.set("sslmode", "verify-full");
+    if (!url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "require");
+    }
     return url.toString();
   } catch {
     const [base, query = ""] = connectionString.split("?");
     const params = new URLSearchParams(query);
-    params.set("sslmode", "verify-full");
+    if (!params.has("sslmode")) {
+      params.set("sslmode", "require");
+    }
     const nextQuery = params.toString();
     return nextQuery ? `${base}?${nextQuery}` : base;
   }
 };
 
-const connectionString = withExplicitSslMode(connectDB);
+const globalForDb = globalThis as unknown as {
+  __fineTrackerDbPool?: Pool;
+  __fineTrackerDbPoolInit?: Promise<Pool>;
+  __fineTrackerUsersReady?: Promise<void>;
+};
 
-const globalForDb = globalThis as unknown as { __fineTrackerDbPool?: Pool };
+const getDbPool = async (): Promise<Pool> => {
+  if (globalForDb.__fineTrackerDbPool) {
+    return globalForDb.__fineTrackerDbPool;
+  }
 
-export const db =
-  globalForDb.__fineTrackerDbPool ??
-  new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+  if (!globalForDb.__fineTrackerDbPoolInit) {
+    globalForDb.__fineTrackerDbPoolInit = Promise.resolve().then(() => {
+      const connectDB = getConnectionStringFromEnv();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.__fineTrackerDbPool = db;
-}
+      if (!connectDB) {
+        throw new Error(
+          "Missing database connection string. Set DATABASE_URL or POSTGRES_URL.",
+        );
+      }
+
+      const connectionString = withExplicitSslMode(connectDB);
+      const pool = new Pool({
+        connectionString,
+        ssl: { rejectUnauthorized: false },
+      });
+
+      globalForDb.__fineTrackerDbPool = pool;
+      return pool;
+    });
+  }
+
+  return globalForDb.__fineTrackerDbPoolInit;
+};
+
+const query: Pool["query"] = ((...args: unknown[]) => {
+  return getDbPool().then((pool) => {
+    const poolQuery = pool.query as (...innerArgs: unknown[]) => unknown;
+    return poolQuery.apply(pool, args);
+  });
+}) as Pool["query"];
+
+export const db: Pick<Pool, "query"> = { query };
 
 export async function ensureUsersTable() {
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(120) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    );
-  `);
+  if (!globalForDb.__fineTrackerUsersReady) {
+    globalForDb.__fineTrackerUsersReady = (async () => {
+      await db.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(120) NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          password_hash TEXT NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        );
+      `);
+
+      await db.query(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS name VARCHAR(120)",
+      );
+      await db.query(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(255)",
+      );
+      await db.query(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT",
+      );
+      await db.query(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW()",
+      );
+
+      await db.query(
+        "CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique_idx ON users(email)",
+      );
+    })();
+  }
+
+  await globalForDb.__fineTrackerUsersReady;
 }
 
 type SumRow = {
