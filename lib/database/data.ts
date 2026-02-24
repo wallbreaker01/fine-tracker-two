@@ -58,7 +58,7 @@ const getDbPool = async (): Promise<Pool> => {
 const query: Pool["query"] = ((...args: unknown[]) => {
   return getDbPool().then((pool) => {
     const poolQuery = pool.query as (...innerArgs: unknown[]) => unknown;
-    return poolQuery(...args);
+    return poolQuery.apply(pool, args);
   });
 }) as Pool["query"];
 
