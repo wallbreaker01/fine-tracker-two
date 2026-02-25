@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { verifyPassword } from "@/lib/auth/password";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import { signInSchema } from "@/lib/formValidation";
-import { AUTH_SESSION_COOKIE } from "@/lib/auth/session";
+import { AUTH_SESSION_COOKIE, createSessionCookieValue} from "@/lib/auth/session";
 
 type UserRow = {
   id: number;
   name: string;
   email: string;
   password_hash: string;
+  role: "admin" | "user";
 };
 
 export async function POST(request: Request) {
@@ -31,8 +32,7 @@ export async function POST(request: Request) {
 
     const email = parsed.data.email.trim().toLowerCase();
     const result = await db.query<UserRow>(
-      "SELECT id, name, email, password_hash FROM users WHERE email = $1",
-      [email],
+      "SELECT id, name, email, password_hash, role FROM users WHERE email = $1", [email],
     );
 
     const user = result.rows[0];
@@ -54,15 +54,17 @@ export async function POST(request: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
 
     response.cookies.set({
       name: AUTH_SESSION_COOKIE,
-      value: JSON.stringify({
+      value: createSessionCookieValue({
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       }),
       httpOnly: true,
       sameSite: "lax",

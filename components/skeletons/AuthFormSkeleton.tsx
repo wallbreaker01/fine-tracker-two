@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/skeletons/skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type AuthFormSkeletonProps = {
     showName?: boolean

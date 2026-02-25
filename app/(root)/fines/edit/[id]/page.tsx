@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { FineForm } from "@/components/finesComponents/FineForm";
+import { getSessionUser } from "@/lib/auth/session";
 import { getFineById, getFineMembers } from "@/lib/database/fines";
 
 type EditFinePageProps = {
@@ -8,6 +9,12 @@ type EditFinePageProps = {
 };
 
 export default async function EditFinePage({ params }: EditFinePageProps) {
+  const sessionUser = await getSessionUser();
+  
+  if (!sessionUser) redirect("/sign-in");
+
+  if (sessionUser.role !== "admin") redirect("/fines");
+
   const { id } = await params;
   const fineId = Number(id);
 

@@ -37,16 +37,51 @@ if (process.env.NODE_ENV !== "production") {
   globalForDb.__fineTrackerDbPool = db;
 }
 
-export async function ensureUsersTable() {
+let ensureUsersTablePromise: Promise<void> | null = null;
+
+const runEnsureUsersTable = async () => {
   await db.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       name VARCHAR(120) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
+      role VARCHAR(20) NOT NULL DEFAULT 'user',
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+
+  await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user'
+  `);
+
+  await db.query(`
+    UPDATE users
+    SET role = 'user'
+    WHERE role IS NULL OR role NOT IN ('admin', 'user')
+  `);
+
+  await db.query(`
+    ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS users_role_check
+  `);
+
+  await db.query(`
+    ALTER TABLE users
+    ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'user'))
+  `);
+};
+
+export async function ensureUsersTable() {
+  if (!ensureUsersTablePromise) {
+    ensureUsersTablePromise = runEnsureUsersTable().catch((error) => {
+      ensureUsersTablePromise = null;
+      throw error;
+    });
+  }
+
+  await ensureUsersTablePromise;
 }
 
 type SumRow = {

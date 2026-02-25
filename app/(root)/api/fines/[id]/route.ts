@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
 import { deleteFine, getFineById, updateFine } from "@/lib/database/fines";
 import { fineSchema } from "@/lib/formValidation";
-import { ca } from "zod/locales";
 
 const parseId = (value: string) => {
   const id = Number(value);
@@ -35,7 +34,6 @@ export async function GET(request: Request, context: RouteContext) {
       );
     }
     return NextResponse.json({ success: true, data: fine });
-
   } catch (error) {
     return NextResponse.json(
       {
@@ -55,6 +53,13 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 },
+      );
+    }
+
+    if (sessionUser.role !== "admin") {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: admin access required" },
+        { status: 403 },
       );
     }
 
@@ -117,6 +122,13 @@ export async function DELETE(_request: Request, context: RouteContext) {
       return NextResponse.json(
         { success: false, message: "Unauthorized" },
         { status: 401 },
+      );
+    }
+
+    if (sessionUser.role !== "admin") {
+      return NextResponse.json(
+        { success: false, message: "Forbidden: admin access required" },
+        { status: 403 },
       );
     }
 

@@ -6,10 +6,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 type FinesTableProps = {
     fines: FineListItem[];
+    canManageFines: boolean;
 };
 
 
-export function FinesTable({ fines }: FinesTableProps) {
+export function FinesTable({ fines, canManageFines }: FinesTableProps) {
     if (!fines.length) {
         return (
             <div className="rounded-lg border border-dashed border-border p-8 text-center">
@@ -29,7 +30,7 @@ export function FinesTable({ fines }: FinesTableProps) {
                         <TableHead>Reason</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Amount</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        {canManageFines ? <TableHead className="text-right">Actions</TableHead> : null}
                     </TableRow>
                 </TableHeader>
 
@@ -49,9 +50,11 @@ export function FinesTable({ fines }: FinesTableProps) {
                             <TableCell>{fine.reason}</TableCell>
                             <TableCell>{fine.date}</TableCell>
                             <TableCell>৳{fine.amount.toFixed(2)}</TableCell>
-                            <TableCell>
-                                <FineRowActions fineId={fine.id} />
-                            </TableCell>
+                            {canManageFines ? (
+                                <TableCell>
+                                    <FineRowActions fineId={fine.id} />
+                                </TableCell>
+                            ) : null}
                         </TableRow>
                     ))}
                 </TableBody>
