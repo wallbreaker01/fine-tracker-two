@@ -4,7 +4,7 @@ import type {
   LeaderboardEntry,
   RecentActivityEntry,
   SummaryStats,
-} from "@/lib/database/types";
+} from "@/lib/types";
 
 const connectDB = process.env.DATABASE_URL;
 

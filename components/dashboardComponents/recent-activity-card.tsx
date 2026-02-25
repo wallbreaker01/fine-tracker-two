@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { RecentActivityEntry } from "@/lib/database/types";
+import type { RecentActivityEntry } from "@/lib/types";
 
 type RecentActivityCardProps = {
     data: RecentActivityEntry[];

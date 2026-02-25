@@ -1,4 +1,4 @@
-import { AuthFormSkeleton } from "@/components/auth/AuthFormSkeleton"
+import { AuthFormSkeleton } from "@/components/authComponents/AuthFormSkeleton"
 
 export default function SignUpLoading() {
     return <AuthFormSkeleton showName />

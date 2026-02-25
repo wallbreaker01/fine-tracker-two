@@ -12,9 +12,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(AUTH_SESSION_COOKIE)?.value;
 
-  if (!sessionCookie) {
-    return null;
-  }
+  if (!sessionCookie) return null;
 
   try {
     const parsed = JSON.parse(sessionCookie) as Partial<SessionUser>;

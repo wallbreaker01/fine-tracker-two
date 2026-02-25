@@ -1,5 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { LeaderboardEntry } from "@/lib/database/types";
+import type { LeaderboardEntry } from "@/lib/types";
 
 type LeaderboardCardProps = {
     data: LeaderboardEntry[];

@@ -3,20 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarTrigger,
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { iconMap, navItems } from '@/lib/constants'
 import { CircleUser } from 'lucide-react'
@@ -42,9 +29,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
   React.useEffect(() => {
     const rawUser = localStorage.getItem('fineTrackerUser')
 
-    if (!rawUser) {
-      return
-    }
+    if (!rawUser) return
 
     try {
       setUser(JSON.parse(rawUser) as AuthUser)

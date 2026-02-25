@@ -11,9 +11,7 @@ export function hashPassword(password: string) {
 export function verifyPassword(password: string, storedHash: string) {
   const [salt, hash] = storedHash.split(":");
 
-  if (!salt || !hash) {
-    return false;
-  }
+  if (!salt || !hash) return false;
 
   const passwordHashBuffer = scryptSync(password, salt, KEY_LENGTH);
   const storedHashBuffer = Buffer.from(hash, "hex");

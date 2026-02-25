@@ -10,8 +10,7 @@ type SummaryCardProps = {
 export function SummaryCard({ title, value, subtitle, state = "default" }: SummaryCardProps) {
     
     const stateLabel = 
-    state =='error'? "Unable to load"
-    : state === "empty"? "No data": subtitle;
+    state =='error'? "Unable to load" : state === "empty"? "No data": subtitle;
 
 
     return (

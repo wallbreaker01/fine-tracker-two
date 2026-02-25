@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { ZodIssue } from "zod"
 
-import { FormField } from "@/components/auth/FormField"
+import { FormField } from "@/components/authComponents/FormField"
 import { Button } from "@/components/ui/button"
 import { SignInInput, SignUpInput, signInSchema, signUpSchema, } from "@/lib/formValidation"
 
