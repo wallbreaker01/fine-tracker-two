@@ -4,7 +4,7 @@ import { db, ensureUsersTable } from "@/lib/database/data";
 import { signInSchema } from "@/lib/formValidation";
 import { AUTH_SESSION_COOKIE, createSessionCookieValue} from "@/lib/auth/session";
 
-type UserRow = {
+type UserRow = { //matches the users table structure
   id: number;
   name: string;
   email: string;
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 365,
     });
 
     return response;
@@ -85,3 +85,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+//handles user sign in, validates data
+

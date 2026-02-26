@@ -24,3 +24,16 @@ export type RecentActivityEntry = {
   reason: string;
   createdAt: string;
 };
+
+export type PartySummaryStats = {
+  totalCollected: number;
+  totalSpent: number;
+  netBalance: number;
+};
+
+export type PartyExpenseItem = {
+  id: number;
+  description: string;
+  amount: number;
+  spentAt: string;
+};

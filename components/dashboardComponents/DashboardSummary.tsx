@@ -1,6 +1,6 @@
 import { getSessionUserId } from "@/lib/auth/session";
 import { getSummaryStats } from "@/lib/database/data";
-import { SummaryCard } from './dashboardComponents/summary-card';
+import { SummaryCard } from '../summary-card';
 
 export async function DashboardSummary() {
 

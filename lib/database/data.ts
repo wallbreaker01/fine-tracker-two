@@ -2,6 +2,8 @@ import { cache } from "react";
 import { Pool } from "pg";
 import type {
   LeaderboardEntry,
+  PartyExpenseItem,
+  PartySummaryStats,
   RecentActivityEntry,
   SummaryStats,
 } from "@/lib/types";
@@ -106,6 +108,13 @@ type RecentActivityRow = {
   amount: string;
   reason: string;
   created_at: string;
+};
+
+type PartyExpenseRow = {
+  id: number | string;
+  amount: string;
+  note: string | null;
+  spent_at: string;
 };
 
 const toNumber = (value: string | number | null | undefined) => {
@@ -278,6 +287,71 @@ export const getRecentActivity = cache(
     } catch (error) {
       throw new Error(
         `Failed to load recent activity: ${(error as Error).message}`,
+      );
+    }
+  },
+);
+
+export const getPartySummaryStats = cache(
+  async (): Promise<PartySummaryStats> => {
+    try {
+      await ensureDashboardTables();
+
+      const [totalCollectedResult, totalSpentResult] = await Promise.all([
+        db.query<SumRow>("SELECT COALESCE(SUM(amount), 0) AS total FROM fines"),
+        db.query<SumRow>(
+          "SELECT COALESCE(SUM(amount), 0) AS total FROM party_expenses",
+        ),
+      ]);
+
+      const totalCollected = toNumber(totalCollectedResult.rows[0]?.total);
+      const totalSpent = toNumber(totalSpentResult.rows[0]?.total);
+
+      return {
+        totalCollected,
+        totalSpent,
+        netBalance: totalCollected - totalSpent,
+      };
+    } catch (error) {
+      throw new Error(
+        `Failed to load party summary: ${(error as Error).message}`,
+      );
+    }
+  },
+);
+
+export const getPartyExpenses = cache(
+  async (limit = 8): Promise<PartyExpenseItem[]> => {
+    try {
+      await ensureDashboardTables();
+
+      const safeLimit = Number.isFinite(limit)
+        ? Math.max(1, Math.min(Math.trunc(limit), 100))
+        : 8;
+
+      const result = await db.query<PartyExpenseRow>(
+        `
+          SELECT
+            id,
+            amount,
+            note,
+            spent_at
+          FROM party_expenses
+          ORDER BY spent_at DESC
+          LIMIT $1
+        `,
+        [safeLimit],
+      );
+
+      return result.rows.map((row) => ({
+        id: toNumber(row.id),
+        description: row.note?.trim() || "Untitled expense",
+        amount: toNumber(row.amount),
+        spentAt: new Date(row.spent_at).toISOString(),
+      }));
+    } catch (error) {
+      throw new Error(
+        `Failed to load party expenses: ${(error as Error).message}`,
       );
     }
   },

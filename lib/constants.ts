@@ -10,10 +10,10 @@ import {
 
 export const navItems: { title: string; href: string }[] = [
   { title: "Dashboard", href: "/dashboard" },
-  { title: "Calender", href: "/calender" },
   { title: "Fines", href: "/fines" },
-  { title: "Notifications", href: "/notifications" },
+  { title: "Calender", href: "/calender" },
   { title: "Party", href: "/party" },
+  { title: "Notifications", href: "/notifications" },
   { title: "Profile", href: "/profile" },
 ];
 
@@ -40,3 +40,5 @@ export const authValidationMessages = {
   confirmPasswordRequired: "Confirm password is required",
   passwordMismatch: "Passwords do not match",
 } as const;
+
+export const partyFundGoalAmount = 10000;

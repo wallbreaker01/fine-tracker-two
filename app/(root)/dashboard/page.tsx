@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { SecondarySectionsSkeleton } from "@/components/skeletons/secondary-sections-skeleton";
 import { SummaryCardsSkeleton } from "@/components/skeletons/summary-cards-skeleton";
-import { DashboardDownSummary } from "@/components/DashboardDownSummary";
-import { DashboardSummary } from "@/components/DashboardSummary";
+import { DashboardDownSummary } from "@/components/dashboardComponents/DashboardDownSummary";
+import { DashboardSummary } from "@/components/dashboardComponents/DashboardSummary";
 
 const CURRENT_USER_ID = 1;
 

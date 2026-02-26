@@ -18,9 +18,9 @@ type SessionPayload = SessionUser & {
 };
 
 const getSessionSecret = () => {
-  const secret = process.env.AUTH_SESSION_SECRET ?? process.env.NEXTAUTH_SECRET;
+  const secret = process.env.AUTH_SESSION_SECRET;
   if (!secret) {
-    throw new Error("AUTH_SESSION_SECRET (or NEXTAUTH_SECRET) is required for signed sessions");
+    throw new Error("AUTH_SESSION_SECRET is required for signed sessions");
   }
 
   return secret;

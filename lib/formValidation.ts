@@ -10,14 +10,12 @@ export const signInSchema = z.object({
   password: z.string().min(1, authValidationMessages.passwordRequired),
 });
 
-export const signUpSchema = z
-  .object({
+export const signUpSchema = z.object({
     name: z.string().trim().min(1, authValidationMessages.nameRequired),
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, authValidationMessages.confirmPasswordRequired),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
+  }).refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
     message: authValidationMessages.passwordMismatch,
   });
@@ -34,3 +32,11 @@ export const fineSchema = z.object({
 });
 
 export type FineInput = z.infer<typeof fineSchema>;
+
+export const expenseSchema = z.object({
+  description: z.string().trim()
+    .min(1, "Description is required").max(200, "Description must be 200 characters or fewer"),
+  price: z.number().positive("Price must be greater than 0"),
+});
+
+export type ExpenseInput = z.infer<typeof expenseSchema>;
