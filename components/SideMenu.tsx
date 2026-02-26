@@ -124,7 +124,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
       <SidebarInset>
         <header className="flex h-16 items-center gap-3 border-b px-4">
           <SidebarTrigger className="md:hidden" />
-          <h1 className="text-lg font-semibold">Fine Tracker</h1>
+          <h1 className="text-lg font-semibold lg:hidden">Fine Tracker</h1>
         </header>
         <div className="flex-1 px-4 py-6">{children}</div>
       </SidebarInset>

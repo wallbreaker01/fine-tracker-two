@@ -252,3 +252,91 @@ export async function deleteFine(id: number): Promise<boolean> {
   const result = await db.query(`DELETE FROM fines WHERE id = $1`, [id]);
   return Boolean(result.rowCount);
 }
+
+export type UserProfileData = {
+  id: number;
+  name: string;
+  email: string;
+  image: string | null;
+  initials: string;
+  totalFineAmount: number;
+  fineCount: number;
+};
+
+type UserProfileRow = {
+  id: number;
+  name: string;
+  email: string;
+  image_url: string | null;
+  total_fines: string | null;
+  fine_count: string;
+};
+
+export async function getUserProfile(
+  userId: number,
+): Promise<UserProfileData | null> {
+  await ensureFineInfrastructure();
+
+  const result = await db.query<UserProfileRow>(
+    `
+      SELECT
+        u.id,
+        u.name,
+        u.email,
+        u.image_url,
+        COALESCE(SUM(f.amount), 0) AS total_fines,
+        COUNT(f.id) AS fine_count
+      FROM users u
+      LEFT JOIN fines f ON f.user_id = u.id
+      WHERE u.id = $1
+      GROUP BY u.id, u.name, u.email, u.image_url
+      LIMIT 1
+    `,
+    [userId],
+  );
+
+  const row = result.rows[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    image: row.image_url,
+    initials: buildInitials(row.name),
+    totalFineAmount: toNumber(row.total_fines),
+    fineCount: toNumber(row.fine_count),
+  };
+}
+
+export async function getUserFineHistory(
+  userId: number,
+  limit = 100,
+): Promise<FineListItem[]> {
+  await ensureFineInfrastructure();
+
+  const safeLimit = Number.isFinite(limit)
+    ? Math.max(1, Math.min(Math.trunc(limit), MAX_FINES_LIMIT))
+    : 100;
+
+  const result = await db.query<FineRow>(
+    `
+      SELECT
+        f.id,
+        f.amount,
+        f.reason,
+        TO_CHAR(f.fine_date, 'YYYY-MM-DD') AS fine_date,
+        u.id AS user_id,
+        u.name AS user_name,
+        u.image_url AS user_image
+      FROM fines f
+      INNER JOIN users u ON u.id = f.user_id
+      WHERE f.user_id = $1
+      ORDER BY f.fine_date DESC, f.id DESC
+      LIMIT $2
+    `,
+    [userId, safeLimit],
+  );
+
+  return result.rows.map(mapFineRow);
+}
