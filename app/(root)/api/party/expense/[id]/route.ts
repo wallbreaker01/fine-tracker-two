@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
-import { getPartyExpenseById, deletePartyExpense } from "@/lib/database/party";
+import { getPartyExpenses, deletePartyExpense } from "@/lib/database/party";
 
 type Params = {
   id: string;
@@ -22,7 +22,8 @@ export async function GET(
       );
     }
 
-    const expense = await getPartyExpenseById(expenseId);
+    const expenses = await getPartyExpenses();
+    const expense = expenses.find((e) => e.id === expenseId);
 
     if (!expense) {
       return NextResponse.json(
