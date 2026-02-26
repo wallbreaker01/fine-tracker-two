@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
-import { getPartyExpenses, deletePartyExpense } from "@/lib/database/party";
+import { getPartyExpenses } from "@/lib/database/party";
 
 type Params = {
   id: string;
