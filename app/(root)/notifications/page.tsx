@@ -120,7 +120,7 @@ export default function NotificationsPage() {
               <p className="text-sm text-white opacity-80 ">{notification.description}</p>
               {!notification.isRead && (
                 <Button onClick={() => markAsRead(notification.id)}
-                  className="text-xs font-medium text-blue-400 hover:text-blue-300 border border-blue-400/30 px-0.5 py-0.5 rounded-md transition">
+                  className="text-xs font-medium text-blue-500 hover:text-blue-300 border border-blue-400/30 px-0.5 py-0.5 rounded-md transition">
                   Mark as read</Button>)}
             </div>
             <p className="text-xs opacity-50 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
