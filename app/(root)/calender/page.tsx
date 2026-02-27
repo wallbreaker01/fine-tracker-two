@@ -50,9 +50,11 @@ export default function CalenderPage() {
   }, []);
 
   return (
-    <div className="p-6 bg-black min-h-screen text-white rounded-lg">
+    <div className="p-6 min-h-screen text-zinc-500 rounded-lg">
       <FullCalendar
         plugins={[dayGridPlugin]}
+        initialView='dayGridMonth'
+        dayHeaderFormat={{weekday:"short"}}
         events={events}
         height="auto"
       />
