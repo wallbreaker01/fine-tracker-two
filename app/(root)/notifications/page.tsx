@@ -110,20 +110,20 @@ export default function NotificationsPage() {
           <div
             key={notification.id}
             className={`p-1 rounded-lg transition ${notification.isRead ? 'bg-gray-700' : 'bg-green-500'}`}>
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center pl-4">
               <h2 className="font-semibold">{notification.title}</h2>
               {!notification.isRead && (
                 <span className="text-xs bg-black px-2 py-1 rounded">New</span>
               )}
             </div>
-            <div className="flex justify-between items-start mt-2">
+            <div className="flex justify-between items-start mt-2 pl-4">
               <p className="text-sm text-white opacity-80 ">{notification.description}</p>
               {!notification.isRead && (
                 <Button onClick={() => markAsRead(notification.id)}
                   className="text-xs font-medium text-blue-500 hover:text-blue-300 border border-blue-400/30 px-0.5 py-0.5 rounded-md transition">
                   Mark as read</Button>)}
             </div>
-            <p className="text-xs opacity-50 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
+            <p className="text-xs opacity-50 pl-4">{new Date(notification.createdAt).toLocaleString()}</p>
           </div>
         ))}
       </div>
