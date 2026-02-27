@@ -50,7 +50,7 @@ export default function CalenderPage() {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-900 min-h-screen text-white rounded-lg">
+    <div className="p-6 bg-black min-h-screen text-white rounded-lg">
       <FullCalendar
         plugins={[dayGridPlugin]}
         events={events}
