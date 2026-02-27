@@ -12,7 +12,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold text-white">Dashboard</h2>
-        <p className="mt-1 text-sm text-white">Track fines, rankings, and recent entries at a glance.</p>
+        <p className="mt-1 text-sm text-gray-500">Track fines, rankings, and recent entries at a glance.</p>
       </div>
 
       <Suspense fallback={<SummaryCardsSkeleton />}>

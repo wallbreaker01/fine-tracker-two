@@ -22,7 +22,7 @@ export default async function finePage({ searchParams }: FinesPageProps) {
     <div className=" space-y-6 ">
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-semibold text-gray-400">Fines</h2>
+          <h2 className="text-2xl font-semibold text-white">Fines</h2>
           <p className="mt-1 text-sm text-gray-500">Manage all team fines</p>
         </div>
         <Button asChild>
