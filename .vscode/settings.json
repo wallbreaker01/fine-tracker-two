@@ -1,8 +1,10 @@
 {
-    "cSpell.words": [
-        "BIGSERIAL",
-        "NEXTAUTH",
-        "sslmode",
-        "TIMESTAMPTZ"
-    ]
+  "cSpell.words": [
+    "BIGSERIAL",
+    "daygrid",
+    "fullcalendar",
+    "NEXTAUTH",
+    "sslmode",
+    "TIMESTAMPTZ"
+  ]
 }

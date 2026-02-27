@@ -4,8 +4,6 @@ import { SummaryCardsSkeleton } from "@/components/skeletons/summary-cards-skele
 import { DashboardDownSummary } from "@/components/dashboardComponents/DashboardDownSummary";
 import { DashboardSummary } from "@/components/dashboardComponents/DashboardSummary";
 
-const CURRENT_USER_ID = 1;
-
 
 export default function DashboardPage() {
   return (
