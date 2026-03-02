@@ -3,10 +3,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger,
-} from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger} from '@/components/ui/sidebar'
 import { iconMap, navItems } from '@/lib/constants'
-import { CircleUser } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 
@@ -25,6 +23,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
   const pathname = usePathname() || '/'
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false)
   const [user, setUser] = React.useState<AuthUser | null>(null)
+  const [unreadCount, setUnreadCount] = React.useState(0)
 
   React.useEffect(() => {
     const rawUser = localStorage.getItem('fineTrackerUser')
@@ -37,6 +36,25 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
       localStorage.removeItem('fineTrackerUser')
     }
   }, [])
+
+  React.useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try{
+        const response = await fetch('/api/notification')
+        const data = await response.json()
+        if(data.success && Array.isArray(data.data)){
+          const unread = data.data.filter((notification: any) => !notification.isRead).length
+          setUnreadCount(unread)
+        }
+
+      } catch (error) {
+        console.error('Failed to fetch unread notifications count:', error);
+      }
+    }
+    fetchUnreadCount()
+    const interval = setInterval(fetchUnreadCount, 5000)
+    return () => clearInterval(interval)
+  },[])
 
   const onSignOut = async () => {
     await fetch('/api/auth/sign-out', { method: 'POST' })
@@ -55,7 +73,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
             className="flex items-center gap-3 rounded-md px-2 py-1.5"
           >
             <div className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-md text-lg font-semibold">
-              <Image src="/file.svg" alt="Fine Tracker Logo" width={32} height={32} />
+              <Image src="/favicon.ico" alt="Fine Tracker Logo" width={40} height={40} />
             </div>
             <div className="space-y-0.5">
               <p className="text-sm font-semibold leading-tight">Fine Tracker</p>
@@ -83,6 +101,11 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
                         <Link href={item.href}>
                           <Icon className="text-sidebar-foreground/70" />
                           <span>{item.title}</span>
+                          {item.href === '/notifications' && unreadCount > 0 && (
+                            <span className="right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-semibold text-white">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          )}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

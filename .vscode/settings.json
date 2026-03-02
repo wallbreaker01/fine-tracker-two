@@ -4,6 +4,7 @@
     "daygrid",
     "fullcalendar",
     "NEXTAUTH",
+    "notif",
     "sslmode",
     "TIMESTAMPTZ"
   ]
