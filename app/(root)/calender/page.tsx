@@ -55,6 +55,7 @@ export default function CalenderPage() {
         plugins={[dayGridPlugin]}
         initialView='dayGridMonth'
         dayHeaderFormat={{weekday:"short"}}
+        firstDay={6}
         events={events}
         height="auto"
       />
