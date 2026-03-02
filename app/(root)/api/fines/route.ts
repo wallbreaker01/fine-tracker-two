@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
-import { createFine, getFines } from "@/lib/database/fines";
+import { createFine, getFines, getFineMembers } from "@/lib/database/fines";
 import { fineSchema } from "@/lib/formValidation";
+import { createNotification } from "@/lib/database/notifications";
 
 export async function GET() {
   try {
@@ -44,6 +45,24 @@ export async function POST(request: Request) {
     }
 
     const fine = await createFine(parsed.data);
+
+    try {
+      const members = await getFineMembers();
+      const fineReceiver = members.find((m) => m.id === parsed.data.userId);
+
+      if (fineReceiver) {
+        await createNotification(
+          parsed.data.userId,
+          "New Fine Added",
+          `You received a fine of ৳${fine.amount} Reason: ${fine.reason}`,
+          "fine",
+          fine.id,
+        );
+      }
+    } catch (notificationError) {
+      console.error("Error creating notification:", notificationError);
+    }
+
     // revalidatePath("/fines");
     // revalidatePath("/dashboard");
 

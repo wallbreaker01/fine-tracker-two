@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { getSessionUser } from "@/lib/auth/session";
 import { createPartyExpense, getPartyExpenses } from "@/lib/database/party";
 import { expenseSchema } from "@/lib/formValidation";
+import { createNotification } from "@/lib/database/notifications";
+import { db } from "@/lib/database/data";
 
 export async function GET() {
   try {
@@ -44,6 +46,24 @@ export async function POST(request: Request) {
     }
 
     const expense = await createPartyExpense(parsed.data);
+
+    try {
+      const usersResult = await db.query(`SELECT id FROM users`);
+      const userIds = usersResult.rows.map((row: any) => row.id);
+
+      for (const userId of userIds) {
+        await createNotification(
+          userId,
+          "New Expense",
+          `A new  expense of ৳${expense.amount} was added: ${expense.description}`,
+          "expense",
+          expense.id,
+        );
+      }
+    } catch (notificationError) {
+      console.error("Error creating notifications:", notificationError);
+    }
+
     revalidatePath("/party");
 
     return NextResponse.json({

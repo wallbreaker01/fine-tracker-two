@@ -37,3 +37,13 @@ export type PartyExpenseItem = {
   amount: number;
   spentAt: string;
 };
+
+export type Notification = {
+  id: number;
+  title: string;
+  description: string;
+  isRead: boolean;
+  createdAt: string;
+  type: 'fine' | 'expense' | 'system';
+  relatedId?: number;
+};
