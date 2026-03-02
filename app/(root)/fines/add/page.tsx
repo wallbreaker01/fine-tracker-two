@@ -25,7 +25,3 @@ export default async function AddFinePage() {
     </div>
   ) 
 }
-
-//   if (!members.length) {
-//     redirect("/fines?toast=Please%20create%20a%20member%20before%20adding%20fines&type=error");
-//   }

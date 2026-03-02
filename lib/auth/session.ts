@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const AUTH_SESSION_COOKIE = "fineTrackerSession";
-const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 export type UserRole = "admin" | "user";
 

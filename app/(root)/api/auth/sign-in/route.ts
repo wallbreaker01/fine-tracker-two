@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { verifyPassword } from "@/lib/auth/password";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import { signInSchema } from "@/lib/formValidation";
-import { AUTH_SESSION_COOKIE, createSessionCookieValue} from "@/lib/auth/session";
+import { AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, createSessionCookieValue } from "@/lib/auth/session";
 
-type UserRow = { //matches the users table structure
+type UserRow = {
+  //matches the users table structure
   id: number;
   name: string;
   email: string;
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
 
     const email = parsed.data.email.trim().toLowerCase();
     const result = await db.query<UserRow>(
-      "SELECT id, name, email, password_hash, role FROM users WHERE email = $1", [email],
+      "SELECT id, name, email, password_hash, role FROM users WHERE email = $1",
+      [email],
     );
 
     const user = result.rows[0];
@@ -70,7 +72,7 @@ export async function POST(request: Request) {
       sameSite: "lax",
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 60 * 60 * 24 * 365,
+      maxAge: SESSION_MAX_AGE_SECONDS,
     });
 
     return response;
@@ -87,4 +89,3 @@ export async function POST(request: Request) {
 }
 
 //handles user sign in, validates data
-

@@ -52,7 +52,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
       }
     }
     fetchUnreadCount()
-    const interval = setInterval(fetchUnreadCount, 5000)
+    const interval = setInterval(fetchUnreadCount, 3000)
     return () => clearInterval(interval)
   },[])
 

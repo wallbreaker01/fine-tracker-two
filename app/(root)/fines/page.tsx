@@ -32,7 +32,6 @@ export default async function finePage({ searchParams }: FinesPageProps) {
       <Suspense fallback={<FinesTableSkeleton />}>
         <FinesTableSection />
       </Suspense>
-      {/* <FinesToast message={params.toast} type={params.type ?? "success"} /> */}
     </div>
   )
 }

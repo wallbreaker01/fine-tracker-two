@@ -1,12 +1,6 @@
 import { cache } from "react";
 import { Pool } from "pg";
-import type {
-  LeaderboardEntry,
-  PartyExpenseItem,
-  PartySummaryStats,
-  RecentActivityEntry,
-  SummaryStats,
-} from "@/lib/types";
+import type { LeaderboardEntry, PartyExpenseItem, PartySummaryStats, RecentActivityEntry, SummaryStats} from "@/lib/types";
 
 const connectDB = process.env.DATABASE_URL;
 

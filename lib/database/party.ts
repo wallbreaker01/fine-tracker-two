@@ -71,16 +71,9 @@ export async function getPartyExpenses(
     : DEFAULT_EXPENSES_LIMIT;
 
   const result = await db.query<PartyExpenseRow>(
-    `
-      SELECT
-        id,
-        amount,
-        note,
-        spent_at
+    `SELECT id, amount, note, spent_at
       FROM party_expenses
-      ORDER BY spent_at DESC, id DESC
-      LIMIT $1
-    `,
+      ORDER BY spent_at DESC, id DESC LIMIT $1`,
     [safeLimit],
   );
 

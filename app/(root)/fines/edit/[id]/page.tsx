@@ -10,21 +10,17 @@ type EditFinePageProps = {
 
 export default async function EditFinePage({ params }: EditFinePageProps) {
   const sessionUser = await getSessionUser();
-  
   if (!sessionUser) redirect("/sign-in");
-
   if (sessionUser.role !== "admin") redirect("/fines");
 
   const { id } = await params;
   const fineId = Number(id);
-
   if (!Number.isFinite(fineId) || fineId <= 0) {
     notFound();
   }
   if (!fineId) notFound();
 
   const [members, fine] = await Promise.all([getFineMembers(), getFineById(fineId)]);
-
   if (!fine) notFound();
 
   return (

@@ -28,6 +28,7 @@ export default function CalenderPage() {
 
   useEffect(() => {
     const fetchFines = async () => {
+      setLoading(true);
       try {
         const response = await fetch('/api/fines');
         const result = await response.json();

@@ -63,18 +63,9 @@ export const getNotifications = cache(async (limit?: number) => {
   const queryLimit = Math.min(limit ?? DEFAULT_NOTIFICATIONS_LIMIT, MAX_NOTIFICATIONS_LIMIT);
 
   const result = await db.query<NotificationRow>(
-    `SELECT 
-      id, 
-      title, 
-      description, 
-      is_read, 
-      created_at, 
-      type, 
-      related_id 
+    `SELECT id, title, description, is_read, created_at, type, related_id 
      FROM notifications 
-     WHERE user_id = $1 
-     ORDER BY created_at DESC 
-     LIMIT $2`,
+     WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2`,
     [user.id, queryLimit]
   );
 
