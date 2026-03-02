@@ -41,7 +41,6 @@ export async function FineHistory() {
                     {fineHistory.length === 0 ? (
                         <div className="text-center text-muted-foreground py-4">
                             <p className="text-lg font-medium text-foreground">No fines found</p>
-                            {/* <p className="mt-1 text-sm text-muted-foreground">You have a clean record!</p> */}
                         </div>
                     ) : (
                         <div className="overflow-hidden rounded-lg border border-border">
@@ -56,13 +55,9 @@ export async function FineHistory() {
                                 <TableBody>
                                     {fineHistory.map((fine) => (
                                         <TableRow key={fine.id}>
-                                            <TableCell className="font-medium text-foreground">
-                                                {fine.reason}
-                                            </TableCell>
+                                            <TableCell className="font-medium text-foreground">{fine.reason}</TableCell>
                                             <TableCell className="text-muted-foreground">{fine.date}</TableCell>
-                                            <TableCell className="font-semibold text-destructive">
-                                                ৳{fine.amount.toLocaleString()}
-                                            </TableCell>
+                                            <TableCell className="font-semibold text-destructive">৳{fine.amount.toLocaleString()}</TableCell>
                                         </TableRow>
                                     ))} 
                                 </TableBody>
@@ -71,7 +66,6 @@ export async function FineHistory() {
                     )}
                 </CardContent>
             </Card>
-
         </div>
     )
 }
