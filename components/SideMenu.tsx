@@ -3,15 +3,21 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger} from '@/components/ui/sidebar'
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarRail, SidebarTrigger } from '@/components/ui/sidebar'
 import { iconMap, navItems } from '@/lib/constants'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 type AuthUser = {
   id: number
   name: string
   email: string
+  avatar?: string | null
+}
+
+type NotificationItem = {
+  isRead: boolean
 }
 
 type SideMenuProps = {
@@ -26,24 +32,36 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
   const [unreadCount, setUnreadCount] = React.useState(0)
 
   React.useEffect(() => {
-    const rawUser = localStorage.getItem('fineTrackerUser')
+    const loadUser = () => {
+      const rawUser = localStorage.getItem('fineTrackerUser')
+      if (!rawUser) {
+        setUser(null)
+        return
+      }
 
-    if (!rawUser) return
+      try {
+        setUser(JSON.parse(rawUser) as AuthUser)
+      } catch {
+        localStorage.removeItem('fineTrackerUser')
+        setUser(null)
+      }
+    }
 
-    try {
-      setUser(JSON.parse(rawUser) as AuthUser)
-    } catch {
-      localStorage.removeItem('fineTrackerUser')
+    loadUser()
+    window.addEventListener('fineTrackerUserUpdated', loadUser)
+
+    return () => {
+      window.removeEventListener('fineTrackerUserUpdated', loadUser)
     }
   }, [])
 
   React.useEffect(() => {
     const fetchUnreadCount = async () => {
-      try{
+      try {
         const response = await fetch('/api/notification')
-        const data = await response.json()
-        if(data.success && Array.isArray(data.data)){
-          const unread = data.data.filter((notification: any) => !notification.isRead).length
+        const data = (await response.json()) as { success?: boolean; data?: NotificationItem[] }
+        if (data.success && Array.isArray(data.data)) {
+          const unread = data.data.filter((notification) => !notification.isRead).length
           setUnreadCount(unread)
         }
 
@@ -54,7 +72,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
     fetchUnreadCount()
     const interval = setInterval(fetchUnreadCount, 3000)
     return () => clearInterval(interval)
-  },[])
+  }, [])
 
   const onSignOut = async () => {
     await fetch('/api/auth/sign-out', { method: 'POST' })
@@ -122,9 +140,12 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
               onClick={() => setIsProfileMenuOpen((prev) => !prev)}
               className="bg-sidebar-accent/40 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground font-semibold text-sm">
-                {user?.name?.[0]?.toUpperCase()}
-              </div>
+              <Avatar className="h-9 w-9 rounded-md">
+                <AvatarImage src={user?.avatar ?? ''} alt={user?.name ?? 'User'} />
+                <AvatarFallback className="rounded-md bg-primary text-primary-foreground font-semibold text-sm">
+                  {user?.name?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium leading-tight">{user?.name}</p>
                 <p className="truncate text-xs text-sidebar-foreground/70">

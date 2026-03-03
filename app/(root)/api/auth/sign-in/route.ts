@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { verifyPassword } from "@/lib/auth/password";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import { signInSchema } from "@/lib/formValidation";
-import { AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, createSessionCookieValue } from "@/lib/auth/session";
+import {AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, createSessionCookieValue} from "@/lib/auth/session";
 
 type UserRow = {
   //matches the users table structure
   id: number;
   name: string;
   email: string;
+  image_url: string | null;
   password_hash: string;
   role: "admin" | "user";
 };
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
 
     const email = parsed.data.email.trim().toLowerCase();
     const result = await db.query<UserRow>(
-      "SELECT id, name, email, password_hash, role FROM users WHERE email = $1",
+      "SELECT id, name, email, image_url, password_hash, role FROM users WHERE email = $1",
       [email],
     );
 
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
+        avatar: user.image_url,
         role: user.role,
       },
     });

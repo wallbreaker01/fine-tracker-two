@@ -1,7 +1,7 @@
 import { getSessionUser } from "@/lib/auth/session";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card, CardContent } from "../ui/card";
 import { getUserProfile } from "@/lib/database/fines";
+import { ProfileAvatar } from "@/components/profileComponents/ProfileAvatarUploader";
 
 export async function ProfileSection() {
     const sessionUser = await getSessionUser();
@@ -34,12 +34,12 @@ export async function ProfileSection() {
     return (
         <Card>
             <CardContent className="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-border">
-                <div className="flex items-center gap-4">
-                    <Avatar className="h-24 w-24 rounded-full bg-muted shrink-0">
-                        <AvatarImage src={profileData.image ?? "/placeholder-user.jpg"} alt={profileData.name ?? "User"} />
-                        <AvatarFallback className="text-2xl font-semibold">{profileData.initials ?? ""}</AvatarFallback>
-                    </Avatar>
-                </div>
+                <ProfileAvatar
+                    userId={profileData.id}
+                    name={profileData.name}
+                    initials={profileData.initials}
+                    image={profileData.image}
+                />
 
                 <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-center">
                     <div className="text-center sm:text-left sm:col-span-2 md:col-span-1">

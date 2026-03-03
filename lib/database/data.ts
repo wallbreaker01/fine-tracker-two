@@ -1,6 +1,20 @@
 import { cache } from "react";
 import { Pool } from "pg";
-import type { LeaderboardEntry, PartyExpenseItem, PartySummaryStats, RecentActivityEntry, SummaryStats} from "@/lib/types";
+import type {
+  LeaderboardEntry,
+  PartyExpenseItem,
+  PartySummaryStats,
+  RecentActivityEntry,
+  SummaryStats,
+} from "@/lib/types";
+import {
+  SumRow,
+  TopFineGiverRow,
+  LeaderboardRow,
+  RecentActivityRow,
+  PartyExpenseRow,
+} from "@/lib/types";
+import { AvatarRow } from "@/lib/types";
 
 const connectDB = process.env.DATABASE_URL;
 
@@ -53,6 +67,11 @@ const runEnsureUsersTable = async () => {
   `);
 
   await db.query(`
+    ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS image_url TEXT
+  `);
+
+  await db.query(`
     UPDATE users
     SET role = 'user'
     WHERE role IS NULL OR role NOT IN ('admin', 'user')
@@ -79,37 +98,6 @@ export async function ensureUsersTable() {
 
   await ensureUsersTablePromise;
 }
-
-type SumRow = {
-  total: string | null;
-};
-
-type TopFineGiverRow = {
-  name: string;
-  total_fine: string;
-};
-
-type LeaderboardRow = {
-  id: number | string;
-  name: string;
-  total_fine: string;
-};
-
-type RecentActivityRow = {
-  id: number | string;
-  user_id: number;
-  user_name: string;
-  amount: string;
-  reason: string;
-  created_at: string;
-};
-
-type PartyExpenseRow = {
-  id: number | string;
-  amount: string;
-  note: string | null;
-  spent_at: string;
-};
 
 const toNumber = (value: string | number | null | undefined) => {
   if (typeof value === "number") return value;
@@ -219,10 +207,11 @@ export const getLeaderboard = cache(
           SELECT
             u.id,
             u.name,
+            u.image_url,
             COALESCE(SUM(f.amount), 0) AS total_fine
           FROM users u
           LEFT JOIN fines f ON f.user_id = u.id
-          GROUP BY u.id, u.name
+          GROUP BY u.id, u.name, u.image_url
           ORDER BY total_fine DESC, u.name ASC
           LIMIT $1
         `,
@@ -232,7 +221,7 @@ export const getLeaderboard = cache(
       return result.rows.map((row, index) => ({
         id: toNumber(row.id),
         name: row.name,
-        avatar: null,
+        avatar: row.image_url,
         totalFine: toNumber(row.total_fine),
         rank: index + 1,
       }));
@@ -350,3 +339,13 @@ export const getPartyExpenses = cache(
     }
   },
 );
+
+export async function updateUserAvatar(userId: number, avatarUrl: string) {
+  await ensureUsersTable();
+  const result = await db.query<AvatarRow>(
+    `UPDATE users SET image_url = $2 WHERE id = $1 RETURNING id, image_url`,
+    [userId, avatarUrl],
+  );
+
+  return result.rowCount ? result.rows[0] : null;
+}

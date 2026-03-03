@@ -2,6 +2,16 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Create a `.env.local` file and add these environment variables:
+
+```bash
+DATABASE_URL=your_database_url
+AUTH_SESSION_SECRET=your_session_secret
+
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your_unsigned_upload_preset
+```
+
 First, run the development server:
 
 ```bash

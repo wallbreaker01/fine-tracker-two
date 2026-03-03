@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { LeaderboardEntry } from "@/lib/types";
 
 type LeaderboardCardProps = {
@@ -47,9 +48,12 @@ export function LeaderboardCard({ data, hasError = false }: LeaderboardCardProps
                         className="flex items-center justify-between rounded-md border border-gray-700/80 bg-black px-3 py-2 transform transition-all duration-150 hover:-translate-y-0.5 hover:bg-gray-900/60 hover:shadow-md"
                     >
                         <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-700 text-xs font-semibold text-gray-400">
-                                {getInitials(entry.name)}
-                            </div>
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={entry.avatar ?? ""} alt={entry.name} />
+                                <AvatarFallback className="bg-gray-700 text-gray-300">
+                                    {getInitials(entry.name)}
+                                </AvatarFallback>
+                            </Avatar>
                             <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-white">{entry.name}</p>
                                 <p className="text-xs text-gray-500">Rank #{entry.rank}</p>

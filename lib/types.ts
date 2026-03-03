@@ -47,3 +47,58 @@ export type Notification = {
   type: 'fine' | 'expense' | 'system';
   relatedId?: number;
 };
+
+export type StoredUser = {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+};
+
+export type ProfileAvatarUploaderProps = {
+    userId: number;
+    name: string;
+    initials: string;
+    image: string | null;
+};
+
+export type AvatarRow = {
+  id: number;
+  image_url: string | null;
+};
+
+export type AvatarUpdatePayload = {
+  avatarUrl?: string;
+};
+
+export type SumRow = {
+  total: string | null;
+};
+
+export type TopFineGiverRow = {
+  name: string;
+  total_fine: string;
+};
+
+export type LeaderboardRow = {
+  id: number | string;
+  name: string;
+  image_url: string | null;
+  total_fine: string;
+};
+
+export type RecentActivityRow = {
+  id: number | string;
+  user_id: number;
+  user_name: string;
+  amount: string;
+  reason: string;
+  created_at: string;
+};
+
+export type PartyExpenseRow = {
+  id: number | string;
+  amount: string;
+  note: string | null;
+  spent_at: string;
+};
