@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FineRowActions } from "@/components/finesComponents/FineRowActions";
-import type { FineListItem } from "@/lib/database/fines";
+// import type { FineListItem } from "@/lib/database/fines";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FinesTableProps } from "@/lib/types";
 
