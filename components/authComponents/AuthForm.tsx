@@ -4,10 +4,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { FormEvent, useState } from "react"
 import { ZodIssue } from "zod"
-
 import { FormField } from "@/components/authComponents/FormField"
 import { Button } from "@/components/ui/button"
 import { SignInInput, SignUpInput, signInSchema, signUpSchema, } from "@/lib/formValidation"
+import { AuthResponse } from "@/lib/types"
+import { authRoutes } from "@/lib/constants"
+import { signInInitialState, signUpInitialState } from "@/lib/constants"
 
 type Mode = "sign-in" | "sign-up"
 
@@ -18,18 +20,6 @@ type AuthFormProps = {
     mode: Mode
 }
 
-type AuthResponse = {
-    success: boolean
-    message: string
-    emailSent?: boolean
-    emailError?: string
-    user?: {
-        id: number
-        name: string
-        email: string
-        avatar?: string | null
-    }
-}
 
 function mapZodIssues<T extends string>(issues: ZodIssue[]): Partial<Record<T, string>> {
     return issues.reduce((acc, issue) => {
@@ -40,24 +30,6 @@ function mapZodIssues<T extends string>(issues: ZodIssue[]): Partial<Record<T, s
         return acc
     }, {} as Partial<Record<T, string>>)
 }
-
-const signInInitialState: SignInInput = {
-    email: "",
-    password: "",
-}
-
-const signUpInitialState: SignUpInput = {
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-}
-
-const authRoutes = {
-    signIn: "/sign-in",
-    signUp: "/sign-up",
-    dashboard: "/dashboard",
-} as const
 
 async function postAuth(endpoint: string, payload: SignInInput | SignUpInput): Promise<AuthResponse> {
     const response = await fetch(endpoint, {

@@ -2,12 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FineRowActions } from "@/components/finesComponents/FineRowActions";
 import type { FineListItem } from "@/lib/database/fines";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-
-type FinesTableProps = {
-    fines: FineListItem[];
-    canManageFines: boolean;
-};
+import { FinesTableProps } from "@/lib/types";
 
 
 export function FinesTable({ fines, canManageFines }: FinesTableProps) {

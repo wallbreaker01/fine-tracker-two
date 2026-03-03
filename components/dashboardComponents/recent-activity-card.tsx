@@ -1,17 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { RecentActivityEntry } from "@/lib/types";
+import { RecentActivityCardProps } from "@/lib/types";
+import { dateFormatter } from "@/lib/constants";
 
-type RecentActivityCardProps = {
-    data: RecentActivityEntry[];
-    hasError?: boolean;
-};
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-});
 
 export function RecentActivityCard({ data, hasError = false }: RecentActivityCardProps) {
     if (hasError) {

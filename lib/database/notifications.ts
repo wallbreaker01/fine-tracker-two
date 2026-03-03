@@ -2,19 +2,12 @@ import { cache } from "react";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import type { Notification } from "@/lib/types";
 import { getSessionUser } from "@/lib/auth/session";
+import { NotificationRow } from "@/lib/types";
 
 const DEFAULT_NOTIFICATIONS_LIMIT = 50;
 const MAX_NOTIFICATIONS_LIMIT = 200;
 
-type NotificationRow = {
-  id: number;
-  title: string;
-  description: string;
-  is_read: boolean;
-  created_at: string;
-  type: 'fine' | 'expense' | 'system';
-  related_id: number | null;
-};
+
 
 const globalForNotificationInfrastructure = globalThis as unknown as {
   __fineTrackerNotificationInfraReady?: Promise<void>;

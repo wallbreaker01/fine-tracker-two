@@ -1,11 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-type SummaryCardProps = {
-    title: string;
-    value: string;
-    subtitle?: string;
-    state?: "default" | "empty" | "error";
-};
+import { SummaryCardProps } from "@/lib/types";
 
 export function SummaryCard({ title, value, subtitle, state = "default" }: SummaryCardProps) {
     

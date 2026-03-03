@@ -8,21 +8,8 @@ import { iconMap, navItems } from '@/lib/constants'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { AuthUser, NotificationItem, SideMenuProps } from '@/lib/types'
 
-type AuthUser = {
-  id: number
-  name: string
-  email: string
-  avatar?: string | null
-}
-
-type NotificationItem = {
-  isRead: boolean
-}
-
-type SideMenuProps = {
-  children: React.ReactNode
-}
 
 const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
   const router = useRouter()

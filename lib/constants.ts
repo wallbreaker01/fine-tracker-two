@@ -7,6 +7,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import { SignInInput, SignUpInput } from "./formValidation";
 
 export const navItems: { title: string; href: string }[] = [
   { title: "Dashboard", href: "/dashboard" },
@@ -42,3 +43,23 @@ export const authValidationMessages = {
 } as const;
 
 export const partyFundGoalAmount = 10000;
+
+
+export const signInInitialState: SignInInput = {
+    email: "",
+    password: "",
+}
+
+export const signUpInitialState: SignUpInput = {
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+}
+
+export const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+});

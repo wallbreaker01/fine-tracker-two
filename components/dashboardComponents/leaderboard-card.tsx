@@ -1,11 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import type { LeaderboardEntry } from "@/lib/types";
+import { LeaderboardCardProps } from "@/lib/types";
 
-type LeaderboardCardProps = {
-    data: LeaderboardEntry[];
-    hasError?: boolean;
-};
 
 const getInitials = (name: string) => {
     const parts = name.split(" ").filter(Boolean);

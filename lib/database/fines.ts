@@ -1,39 +1,12 @@
 import { cache } from "react";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import type { FineInput } from "@/lib/formValidation";
+import { FineListItem, FineRow, MemberRow, FineMember } from "@/lib/types";
 
 const DEFAULT_FINES_LIMIT = 100;
 const MAX_FINES_LIMIT = 500;
 
-export type FineMember = {
-  id: number;
-  name: string;
-  image: string | null;
-};
 
-export type FineListItem = {
-  id: number;
-  amount: number;
-  reason: string;
-  date: string;
-  user: FineMember & { initials: string };
-};
-
-type FineRow = {
-  id: number | string;
-  amount: string | number;
-  reason: string;
-  fine_date: string;
-  user_id: number;
-  user_name: string;
-  user_image: string | null;
-};
-
-type MemberRow = {
-  id: number;
-  name: string;
-  image_url: string | null;
-};
 
 const toNumber = (value: string | number | null | undefined) => {
   if (typeof value === "number") return value;

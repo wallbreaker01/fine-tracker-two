@@ -6,10 +6,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { FineRowActionsProps } from "@/lib/types";
 
-type FineRowActionsProps = {
-    fineId: number;
-};
 
 export function FineRowActions({ fineId }: FineRowActionsProps) {
     const router = useRouter();

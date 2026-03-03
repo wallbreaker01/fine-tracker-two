@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-
 import { Button } from "@/components/ui/button";
+import { FinesErrorProps } from "@/lib/types";
 
-type FinesErrorProps = {
-    error: Error & { digest?: string };
-    reset: () => void;
-};
 
 export default function FinesError({ error, reset }: FinesErrorProps) {
     useEffect(() => {

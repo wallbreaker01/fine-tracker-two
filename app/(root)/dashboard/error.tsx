@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-
 import { Button } from "@/components/ui/button";
+import { DashboardErrorProps } from "@/lib/types";
 
-type DashboardErrorProps = {
-    error: Error & { digest?: string };
-    reset: () => void;
-};
 
 export default function DashboardError({ error, reset }: DashboardErrorProps) {
     useEffect(() => {

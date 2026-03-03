@@ -3,16 +3,9 @@ import { verifyPassword } from "@/lib/auth/password";
 import { db, ensureUsersTable } from "@/lib/database/data";
 import { signInSchema } from "@/lib/formValidation";
 import {AUTH_SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, createSessionCookieValue} from "@/lib/auth/session";
+import { UserRow } from "@/lib/types";
 
-type UserRow = {
-  //matches the users table structure
-  id: number;
-  name: string;
-  email: string;
-  image_url: string | null;
-  password_hash: string;
-  role: "admin" | "user";
-};
+
 
 export async function POST(request: Request) {
   try {

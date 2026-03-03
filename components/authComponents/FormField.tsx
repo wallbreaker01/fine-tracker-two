@@ -1,15 +1,6 @@
 import { Input } from "@/components/ui/input"
+import { FormFieldProps } from "@/lib/types"
 
-type FormFieldProps = {
-  id: string
-  label: string
-  type?: "text" | "email" | "password"
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  error?: string
-  disabled?: boolean
-}
 
 export function FormField({id,label,type = "text",value, onChange, placeholder, error, disabled,}: FormFieldProps) {
   return (

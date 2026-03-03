@@ -3,24 +3,8 @@
 import { useEffect, useState } from 'react';
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import { Fine, CalendarEvent } from '@/lib/types';
 
-interface Fine {
-  id: number;
-  reason: string;
-  date: string;
-  amount: number;
-  user: {
-    id: number;
-    name: string;
-    image: string | null;
-    initials: string;
-  };
-}
-
-interface CalendarEvent {
-  title: string;
-  date: string;
-}
 
 export default function CalenderPage() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);

@@ -10,18 +10,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fineSchema, type FineInput } from "@/lib/formValidation";
+import { FineFormProps } from "@/lib/types";
 
-type MemberOption = {
-    id: number;
-    name: string;
-};
 
-type FineFormProps = {
-    mode: "add" | "edit";
-    members: MemberOption[];
-    fineId?: number;
-    initialValues?: FineInput;
-};
 
 export function FineForm({ mode, members, fineId, initialValues }: FineFormProps) {
     const router = useRouter();

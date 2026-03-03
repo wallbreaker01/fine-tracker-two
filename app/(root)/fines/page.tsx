@@ -5,16 +5,8 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FinesTableSection } from "@/components/finesComponents/FinesTableSection";
 import { FinesTableSkeleton } from "@/components/skeletons/fines-table-skeleton";
-// import { FinesToast } from "@/components/finesComponents/FinesToast";
+import { FinesPageProps } from "@/lib/types";
 
-
-
-type FinesPageProps = {
-  searchParams: Promise<{
-    toast?: string;
-    type?: "success" | "error";
-  }>;
-};
 
 
 export default async function finePage({ searchParams }: FinesPageProps) {
