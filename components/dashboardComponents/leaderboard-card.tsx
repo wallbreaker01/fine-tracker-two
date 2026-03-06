@@ -38,24 +38,24 @@ export function LeaderboardCard({ data, hasError = false }: LeaderboardCardProps
                 <CardDescription>Team ranking by total fines</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 px-4">
-                {data.map((entry) => (
+                {data.map((user) => (
                     <div
-                        key={entry.id}
+                        key={user.id}
                         className="flex items-center justify-between rounded-md border border-gray-700/80 bg-black px-3 py-2 transform transition-all duration-150 hover:-translate-y-0.5 hover:bg-gray-900/60 hover:shadow-md"
                     >
                         <div className="flex min-w-0 items-center gap-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={entry.avatar ?? ""} alt={entry.name} />
+                                <AvatarImage src={user.avatar ?? ""} alt={user.name} />
                                 <AvatarFallback className="bg-gray-700 text-gray-300">
-                                    {getInitials(entry.name)}
+                                    {getInitials(user.name)}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="min-w-0">
-                                <p className="truncate text-sm font-semibold text-white">{entry.name}</p>
-                                <p className="text-xs text-gray-500">Rank #{entry.rank}</p>
+                                <p className="truncate text-sm font-semibold text-white">{user.name}</p>
+                                <p className="text-xs text-gray-500">Rank #{user.rank}</p>
                             </div>
                         </div>
-                        <p className="text-sm font-semibold text-yellow-400">৳{entry.totalFine.toLocaleString()}</p>
+                        <p className="text-sm font-semibold text-yellow-400">৳{user.totalFine.toLocaleString()}</p>
                     </div>
                 ))}
             </CardContent>

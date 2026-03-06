@@ -48,22 +48,22 @@ export type Notification = {
   description: string;
   isRead: boolean;
   createdAt: string;
-  type: 'fine' | 'expense' | 'system';
+  type: "fine" | "expense" | "system";
   relatedId?: number;
 };
 
 export type StoredUser = {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string | null;
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
 };
 
 export type ProfileAvatarUploaderProps = {
-    userId: number;
-    name: string;
-    initials: string;
-    image: string | null;
+  userId: number;
+  name: string;
+  initials: string;
+  image: string | null;
 };
 
 export type AvatarRow = {
@@ -135,97 +135,98 @@ export interface CalendarEvent {
 }
 
 export type DashboardErrorProps = {
-    error: Error & { digest?: string };
-    reset: () => void;
+  error: Error & { digest?: string };
+  reset: () => void;
 };
 
 export type FinesErrorProps = {
-    error: Error & { digest?: string };
-    reset: () => void;
+  error: Error & { digest?: string };
+  reset: () => void;
 };
 
 export type FinesPageProps = {
   searchParams: Promise<{
     toast?: string;
     type?: "success" | "error";
+    search?: string;
   }>;
 };
 
 export type AuthResponse = {
-    success: boolean
-    message: string
-    emailSent?: boolean
-    emailError?: string
-    user?: {
-        id: number
-        name: string
-        email: string
-        avatar?: string | null
-    }
-}
+  success: boolean;
+  message: string;
+  emailSent?: boolean;
+  emailError?: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    avatar?: string | null;
+  };
+};
 
 export type FormFieldProps = {
-  id: string
-  label: string
-  type?: "text" | "email" | "password"
-  value: string
-  onChange: (value: string) => void
-  placeholder?: string
-  error?: string
-  disabled?: boolean
-}
+  id: string;
+  label: string;
+  type?: "text" | "email" | "password";
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  error?: string;
+  disabled?: boolean;
+};
 
 export type LeaderboardCardProps = {
-    data: LeaderboardEntry[];
-    hasError?: boolean;
+  data: LeaderboardEntry[];
+  hasError?: boolean;
 };
 
 export type RecentActivityCardProps = {
-    data: RecentActivityEntry[];
-    hasError?: boolean;
+  data: RecentActivityEntry[];
+  hasError?: boolean;
 };
 
 export type MemberOption = {
-    id: number;
-    name: string;
+  id: number;
+  name: string;
 };
 
 export type FineFormProps = {
-    mode: "add" | "edit";
-    members: MemberOption[];
-    fineId?: number;
-    initialValues?: FineInput;
+  mode: "add" | "edit";
+  members: MemberOption[];
+  fineId?: number;
+  initialValues?: FineInput;
 };
 
 export type FineRowActionsProps = {
-    fineId: number;
+  fineId: number;
 };
 
 export type FinesTableProps = {
-    fines: FineListItem[];
-    canManageFines: boolean;
+  fines: FineListItem[];
+  canManageFines: boolean;
 };
 
 export type AuthUser = {
-  id: number
-  name: string
-  email: string
-  avatar?: string | null
-}
+  id: number;
+  name: string;
+  email: string;
+  avatar?: string | null;
+};
 
 export type NotificationItem = {
-  isRead: boolean
-}
+  isRead: boolean;
+};
 
 export type SideMenuProps = {
-  children: React.ReactNode
-}
+  children: React.ReactNode;
+};
 
 export type SummaryCardProps = {
-    title: string;
-    value: string;
-    subtitle?: string;
-    state?: "default" | "empty" | "error";
+  title: string;
+  value: string;
+  subtitle?: string;
+  state?: "default" | "empty" | "error";
 };
 
 export type FineMember = {
@@ -264,6 +265,6 @@ export type NotificationRow = {
   description: string;
   is_read: boolean;
   created_at: string;
-  type: 'fine' | 'expense' | 'system';
+  type: "fine" | "expense" | "system";
   related_id: number | null;
 };
