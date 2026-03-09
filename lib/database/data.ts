@@ -78,13 +78,15 @@ const runEnsureUsersTable = async () => {
   `);
 
   await db.query(`
-    ALTER TABLE users
-    DROP CONSTRAINT IF EXISTS users_role_check
-  `);
-
-  await db.query(`
-    ALTER TABLE users
-    ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'user'))
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'users_role_check'
+      ) THEN
+        ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('admin', 'user'));
+      END IF;
+    END;
+    $$
   `);
 };
 

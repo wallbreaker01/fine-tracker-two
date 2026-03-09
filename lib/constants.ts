@@ -28,7 +28,7 @@ export const iconMap: Record<string, LucideIcon> = {
 };
 
 export const authRoutes = {
-  signIn: "/",
+  signIn: "/sign-in",
   signUp: "/sign-up",
   dashboard: "/dashboard",
 } as const;
@@ -63,3 +63,21 @@ export const dateFormatter = new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
 });
+
+
+export const FormLabels = {
+    "sign-in": {
+        title: "Sign In",
+        subtitle: "Sign in to continue to Fine Tracker",
+        submitLabel: "Sign In",
+        altPrompt: "Don't have an account? ",
+        altLinkLabel: "Sign Up",
+    },
+    "sign-up": {
+        title: "Create Account",
+        subtitle: "Create an account to start tracking fines",
+        submitLabel: "Create Account",
+        altPrompt: "Already have an account? ",
+        altLinkLabel: "Sign In",
+    },
+}

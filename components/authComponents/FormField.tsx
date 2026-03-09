@@ -5,7 +5,7 @@ import { FormFieldProps } from "@/lib/types"
 export function FormField({id,label,type = "text",value, onChange, placeholder, error, disabled,}: FormFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="text-sm text-foreground">
+      <label className="text-sm text-foreground">
         {label}
       </label>
       <Input

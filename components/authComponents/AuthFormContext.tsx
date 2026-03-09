@@ -1,129 +1,107 @@
 "use client"
 
-import { createContext, useContext, useState, FormEvent, ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { ZodIssue } from "zod"
-import { SignInInput, SignUpInput, signInSchema, signUpSchema } from "@/lib/formValidation"
-import { AuthResponse } from "@/lib/types"
 import { authRoutes, signInInitialState, signUpInitialState } from "@/lib/constants"
+import { SignInInput, signInSchema, SignUpInput, signUpSchema } from "@/lib/formValidation"
+import { useRouter } from "next/navigation"
+import React, { useState } from "react"
 
-export type Mode = "sign-in" | "sign-up"
+
+type mode = "sign-in" | "sign-up"
 export type SignInErrors = Partial<Record<keyof SignInInput, string>>
 export type SignUpErrors = Partial<Record<keyof SignUpInput, string>>
 
-interface Feedback {
-    type: "success" | "error"
-    message: string
-}
-
-interface AuthFormContextType {
-    mode: Mode
+interface AuthFormContextValue {
+    mode: mode
     isSignIn: boolean
-    values: SignInInput | SignUpInput
+    formData: SignInInput | SignUpInput
     errors: SignInErrors | SignUpErrors
     isSubmitting: boolean
-    feedback: Feedback | null
-    setField: (field: string, value: string) => void
-    onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>
+    successMessage: string | null
+    handleInputChange: (field: string, value: string) => void
+    handleSubmit: (event: React.FormEvent) => void
 }
 
-const AuthFormContext = createContext<AuthFormContextType | undefined>(undefined) //global container for fortState
+const AuthFormContext = React.createContext<AuthFormContextValue | undefined>(undefined)
 
-// Utility: Convert Zod errors to field errors
-function mapZodIssues<T extends string>(issues: ZodIssue[]): Partial<Record<T, string>> {
-    return issues.reduce((acc, issue) => {
-        const path = issue.path[0]
-        if (typeof path === "string" && !acc[path as T]) {
-            acc[path as T] = issue.message
-        }
-        return acc
-    }, {} as Partial<Record<T, string>>)
+function ZodValidation(issues: any[]): SignInErrors | SignUpErrors {
+    const errorMap: Record<string, string> = {}
+    issues.forEach(issue => {
+        const field = issue.path[0] as string
+        errorMap[field] = issue.message
+    })
+    return errorMap as SignInErrors | SignUpErrors
 }
 
-// Make auth API call
-async function postAuth(endpoint: string, payload: SignInInput | SignUpInput): Promise<AuthResponse> {
+async function authAPICall(endpoint: string, payload: SignInInput | SignUpInput) {
     const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
     })
     return response.json()
 }
 
-export function AuthFormProvider({ children, mode }: { children: ReactNode; mode: Mode }) {
+
+export function AuthFormProvider({ children, mode }: { children: React.ReactNode, mode: mode }) {
     const router = useRouter()
     const isSignIn = mode === "sign-in"
-
-    // Single state for form values (cleaner than managing sign-in and sign-up separately)
-    const [values, setValues] = useState<SignInInput | SignUpInput>(
-        isSignIn ? signInInitialState : signUpInitialState
-    )
+    const [formData, setFormData] = useState<SignInInput | SignUpInput>(isSignIn ? signInInitialState : signUpInitialState)
     const [errors, setErrors] = useState<SignInErrors | SignUpErrors>({})
     const [isSubmitting, setIsSubmitting] = useState(false)
-    const [feedback, setFeedback] = useState<Feedback | null>(null)
+    const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
-    // Update a single field
-    const setField = (field: string, value: string) => {
-        setFeedback(null)
-        setValues((prev) => ({ ...prev, [field]: value }))
-        setErrors((prev) => ({ ...prev, [field]: undefined }))
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+        setErrors(prev => ({ ...prev, [field]: undefined }))
     }
 
-    // Handle form submission
-    const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault()
-        setFeedback(null)
 
-        // Validate
         const schema = isSignIn ? signInSchema : signUpSchema
-        const parsed = schema.safeParse(values)
-        if (!parsed.success) {
-            setErrors(mapZodIssues(parsed.error.issues))
-            return
-        }
+        const SchemaResult = schema.safeParse(formData)
 
-        // Submit
+        if (!SchemaResult.success) {
+            setErrors(ZodValidation(SchemaResult.error.issues))
+            return;
+        }
         setIsSubmitting(true)
         const endpoint = isSignIn ? "/api/auth/sign-in" : "/api/auth/sign-up"
-        const result = await postAuth(endpoint, parsed.data)
-        setIsSubmitting(false)
-
-        // Handle errors
+        const result = await authAPICall(endpoint, formData)
+        
         if (!result.success) {
-            setFeedback({ type: "error", message: result.message })
-            return
+            setErrors(result.error)
+            setIsSubmitting(false)
+            return;
         }
-
-        // Sign-in success
+        
         if (isSignIn) {
             if (result.user) {
-                localStorage.setItem("fineTrackerUser", JSON.stringify(result.user))
+                router.push(authRoutes.dashboard)
             }
-            setFeedback({ type: "success", message: result.message })
-            router.push(authRoutes.dashboard)
-            return
+        } else {
+            // Sign-up success - show message then redirect
+            setSuccessMessage("Account created successfully! Redirecting to sign in...")
+            setTimeout(() => {
+                router.push(authRoutes.signIn)
+            }, 2000)
         }
 
-        // Sign-up logic
-        if (result.emailSent === false) {
-            setFeedback({
-                type: "error",
-                message: result.emailError ? `${result.message}. ${result.emailError}` : result.message,
-            })
-            return
-        }
-
-        setFeedback({ type: "success", message: result.message })
-        router.push(authRoutes.signIn)
     }
+    const values = { mode, isSignIn, formData, errors, isSubmitting, successMessage, handleInputChange, handleSubmit }
 
-    const value = { mode, isSignIn, values, errors, isSubmitting, feedback, setField, onSubmit }
+    return (
+        <AuthFormContext.Provider value={values}>
+            {children}
+        </AuthFormContext.Provider>
+    )
 
-    return <AuthFormContext.Provider value={value}>{children}</AuthFormContext.Provider>
 }
 
 export function useAuthForm() {
-    const context = useContext(AuthFormContext)
-    if (!context) throw new Error("useAuthForm must be used within AuthFormProvider")
+    const context = React.useContext(AuthFormContext)
+    if (!context) {
+        throw new Error("useAuthForm must be used within an AuthFormProvider")
+    }
     return context
 }
