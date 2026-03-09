@@ -220,6 +220,7 @@ export type NotificationItem = {
 
 export type SideMenuProps = {
   children: React.ReactNode;
+  initialUser?: { id: number; name: string; email: string; role: string } | null;
 };
 
 export type SummaryCardProps = {

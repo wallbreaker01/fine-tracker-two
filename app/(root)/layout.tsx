@@ -13,7 +13,7 @@ const Layout = async ({ children }: Props) => {
   }
 
   return (
-    <SideMenu>{children}</SideMenu>
+    <SideMenu initialUser={sessionUser}>{children}</SideMenu>
   )
 }
 

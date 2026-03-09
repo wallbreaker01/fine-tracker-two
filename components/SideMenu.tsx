@@ -11,34 +11,37 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { AuthUser, NotificationItem, SideMenuProps } from '@/lib/types'
 
 
-const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
+const SideMenu: React.FC<SideMenuProps> = ({ children, initialUser }) => {
   const router = useRouter()
   const pathname = usePathname() || '/'
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false)
-  const [user, setUser] = React.useState<AuthUser | null>(null)
+  const [user, setUser] = React.useState<AuthUser>({
+    id: initialUser?.id ?? 0,
+    name: initialUser?.name ?? '',
+    email: initialUser?.email ?? '',
+    avatar: null,
+  })
   const [unreadCount, setUnreadCount] = React.useState(0)
 
   React.useEffect(() => {
-    const loadUser = () => {
+    const loadAvatar = () => {
       const rawUser = localStorage.getItem('fineTrackerUser')
-      if (!rawUser) {
-        setUser(null)
-        return
-      }
-
+      if (!rawUser) return
       try {
-        setUser(JSON.parse(rawUser) as AuthUser)
+        const stored = JSON.parse(rawUser) as AuthUser
+        if (stored.avatar) {
+          setUser((prev) => ({ ...prev, avatar: stored.avatar }))
+        }
       } catch {
         localStorage.removeItem('fineTrackerUser')
-        setUser(null)
       }
     }
 
-    loadUser()
-    window.addEventListener('fineTrackerUserUpdated', loadUser)
+    loadAvatar()
+    window.addEventListener('fineTrackerUserUpdated', loadAvatar)
 
     return () => {
-      window.removeEventListener('fineTrackerUserUpdated', loadUser)
+      window.removeEventListener('fineTrackerUserUpdated', loadAvatar)
     }
   }, [])
 
@@ -128,16 +131,14 @@ const SideMenu: React.FC<SideMenuProps> = ({ children }) => {
               className="bg-sidebar-accent/40 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left"
             >
               <Avatar className="h-9 w-9 rounded-md">
-                <AvatarImage src={user?.avatar ?? ''} alt={user?.name ?? 'User'} />
+                <AvatarImage src={user.avatar ?? ''} alt={user.name} />
                 <AvatarFallback className="rounded-md bg-primary text-primary-foreground font-semibold text-sm">
-                  {user?.name?.[0]?.toUpperCase()}
+                  {user.name[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium leading-tight">{user?.name}</p>
-                <p className="truncate text-xs text-sidebar-foreground/70">
-                  {user?.email}
-                </p>
+                <p className="truncate text-sm font-medium leading-tight">{user.name}</p>
+                <p className="truncate text-xs text-sidebar-foreground/70">{user.email}</p>
               </div>
             </button>
 

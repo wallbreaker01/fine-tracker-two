@@ -77,6 +77,10 @@ export function AuthFormProvider({ children, mode }: { children: React.ReactNode
         
         if (isSignIn) {
             if (result.user) {
+                // Store user in localStorage
+                localStorage.setItem('fineTrackerUser', JSON.stringify(result.user))
+                // Dispatch event so SideMenu can update
+                window.dispatchEvent(new CustomEvent('fineTrackerUserUpdated'))
                 router.push(authRoutes.dashboard)
             }
         } else {
