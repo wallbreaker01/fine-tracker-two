@@ -32,15 +32,6 @@ function ZodValidation(issues: any[]): SignInErrors | SignUpErrors {
     return errorMap as SignInErrors | SignUpErrors
 }
 
-async function authAPICall(endpoint: string, payload: SignInInput | SignUpInput) {
-    const response = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-    })
-    return response.json()
-}
-
 
 export function AuthFormProvider({ children, mode }: { children: React.ReactNode, mode: mode }) {
     const router = useRouter()
@@ -67,7 +58,19 @@ export function AuthFormProvider({ children, mode }: { children: React.ReactNode
         }
         setIsSubmitting(true)
         const endpoint = isSignIn ? "/api/auth/sign-in" : "/api/auth/sign-up"
-        const result = await authAPICall(endpoint, formData)
+        let result: any
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            })
+            result = await response.json()
+        } catch (error) {
+            setErrors({} as SignInErrors)
+            setIsSubmitting(false)
+            return
+        }
         
         if (!result.success) {
             setErrors(result.error)
@@ -75,16 +78,14 @@ export function AuthFormProvider({ children, mode }: { children: React.ReactNode
             return;
         }
         
-        if (isSignIn) {
-            if (result.user) {
-                // Store user in localStorage
+        if (isSignIn) { 
+            if(result.user){
                 localStorage.setItem('fineTrackerUser', JSON.stringify(result.user))
                 // Dispatch event so SideMenu can update
                 window.dispatchEvent(new CustomEvent('fineTrackerUserUpdated'))
                 router.push(authRoutes.dashboard)
             }
         } else {
-            // Sign-up success - show message then redirect
             setSuccessMessage("Account created successfully! Redirecting to sign in...")
             setTimeout(() => {
                 router.push(authRoutes.signIn)
