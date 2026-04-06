@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { FinesTableSection } from "@/components/finesComponents/FinesTableSection";
 import { FinesTableSkeleton } from "@/components/skeletons/fines-table-skeleton";
 import { FinesPageProps } from "@/lib/types";
-import { Searchbar } from "@/components/finesComponents/Searchbar";
+//import { Searchbar } from "@/components/finesComponents/Searchbar";
 
 
 
@@ -25,7 +25,7 @@ export default async function finePage({ searchParams }: FinesPageProps) {
           <Link href="/fines/add"><Plus className="size-4" />Add Fine</Link>
         </Button>
       </div>
-      <div><Searchbar /></div>
+      {/* <div><Searchbar /></div> */}
       <Suspense fallback={<FinesTableSkeleton />}>
         <FinesTableSection search={search} />
       </Suspense>

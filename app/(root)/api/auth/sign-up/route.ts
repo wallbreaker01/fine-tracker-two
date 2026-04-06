@@ -16,6 +16,7 @@ export async function POST(request: Request) {
       );
     }
 
+    // Ensure table exists (cached after first call for performance)
     await ensureUsersTable();
 
     const email = parsed.data.email.trim().toLowerCase();
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const passwordHash = hashPassword(parsed.data.password);
+    const passwordHash = await hashPassword(parsed.data.password);
     await db.query(
       "INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, 'user')", [parsed.data.name.trim(), email, passwordHash],
     );

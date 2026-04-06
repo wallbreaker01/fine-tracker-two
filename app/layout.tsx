@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { initializeDatabase } from "@/lib/database/init";
+
+// Initialize database on app startup (non-blocking for build time)
+initializeDatabase().catch(err => console.error("Database init error:", err));
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

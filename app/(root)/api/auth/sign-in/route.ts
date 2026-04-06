@@ -23,7 +23,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await ensureUsersTable(); //wait to ensure user table
+    // Ensure table exists (cached after first call for performance)
+    await ensureUsersTable();
 
     const email = parsed.data.email.trim().toLowerCase();
     const result = await db.query<UserRow>(
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
     );
 
     const user = result.rows[0];
-    if (!user || !verifyPassword(parsed.data.password, user.password_hash)) {
+    if (!user || !(await verifyPassword(parsed.data.password, user.password_hash))) {
       return NextResponse.json(
         {
           success: false,
